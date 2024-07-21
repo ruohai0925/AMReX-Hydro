@@ -20,6 +20,17 @@
  */
 
 namespace HydroUtils {
+
+/**
+ * \brief Enforces solvablity by scaling outflow to match with inflow.
+ *
+ */
+void enforceInOutSolvability (
+    const amrex::Vector<amrex::Array<amrex::MultiFab*, AMREX_SPACEDIM>>& vels_vec,
+    amrex::BCRec const* bc_type,
+    const amrex::Vector<amrex::Geometry>& geom,
+    bool include_bndry_corners = false);
+
 /**
  * \brief Compute edge state and flux. Most general version for use with multilevel synchronization.
  *        All other versions ultimately call this one.
