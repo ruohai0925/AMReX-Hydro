@@ -173,7 +173,7 @@ Godunov::ComputeAdvectiveVel ( Box const& xbx,
         }
 
         const auto bc = HydroBC::getBC(i, j, k, n, domain, pbc, bc_arr);
-        HydroBC::SetXEdgeBCs(i, j, k, n, vel, lo, hi, bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
+        HydroBC::SetXEdgeBCs(i, j, k, n, vel, lo, hi, lo, hi, bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
 
         Real st = ( (lo+hi) >= 0.) ? lo : hi;
         bool ltm = ( (lo <= 0. && hi >= 0.) || (amrex::Math::abs(lo+hi) < small_vel) );
@@ -194,7 +194,7 @@ Godunov::ComputeAdvectiveVel ( Box const& xbx,
         }
 
         const auto bc = HydroBC::getBC(i, j, k, n, domain, pbc, bc_arr);
-        HydroBC::SetYEdgeBCs(i, j, k, n, vel, lo, hi, bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
+        HydroBC::SetYEdgeBCs(i, j, k, n, vel, lo, hi, lo, hi, bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
 
         Real st = ( (lo+hi) >= 0.) ? lo : hi;
         bool ltm = ( (lo <= 0. && hi >= 0.) || (amrex::Math::abs(lo+hi) < small_vel) );
@@ -215,7 +215,7 @@ Godunov::ComputeAdvectiveVel ( Box const& xbx,
         }
 
         const auto bc = HydroBC::getBC(i, j, k, n, domain, pbc, bc_arr);
-        HydroBC::SetZEdgeBCs(i, j, k, n, vel, lo, hi, bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
+        HydroBC::SetZEdgeBCs(i, j, k, n, vel, lo, hi, lo, hi, bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
 
         Real st = ( (lo+hi) >= 0.) ? lo : hi;
         bool ltm = ( (lo <= 0. && hi >= 0.) || (amrex::Math::abs(lo+hi) < small_vel) );
@@ -291,7 +291,7 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
         Real uad = u_ad(i,j,k);
         const auto bc = HydroBC::getBC(i, j, k, n, domain, pbc, bc_arr);
 
-        HydroBC::SetXEdgeBCs(i, j, k, n, q, lo, hi, bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
+        HydroBC::SetXEdgeBCs(i, j, k, n, q, lo, hi, uad, uad, bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
 
         xlo(i,j,k,n) = lo;
         xhi(i,j,k,n) = hi;
@@ -314,7 +314,7 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
         Real vad = v_ad(i,j,k);
         const auto bc = HydroBC::getBC(i, j, k, n, domain, pbc, bc_arr);
 
-        HydroBC::SetYEdgeBCs(i, j, k, n, q, lo, hi, bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
+        HydroBC::SetYEdgeBCs(i, j, k, n, q, lo, hi, vad, vad, bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
 
         ylo(i,j,k,n) = lo;
         yhi(i,j,k,n) = hi;
@@ -338,7 +338,7 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
         Real wad = w_ad(i,j,k);
         const auto bc = HydroBC::getBC(i, j, k, n, domain, pbc, bc_arr);
 
-        HydroBC::SetZEdgeBCs(i, j, k, n, q, lo, hi, bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
+        HydroBC::SetZEdgeBCs(i, j, k, n, q, lo, hi, wad, wad, bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
 
         zlo(i,j,k,n) = lo;
         zhi(i,j,k,n) = hi;
@@ -386,7 +386,8 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                               q, divu, v_ad, yedge);
 
         Real wad = w_ad(i,j,k);
-        HydroBC::SetZEdgeBCs(i, j, k, n, q, l_zylo, l_zyhi, bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
+        HydroBC::SetZEdgeBCs(i, j, k, n, q, l_zylo, l_zyhi, wad, wad,
+                             bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
 
 
         Real st = (wad >= 0.) ? l_zylo : l_zyhi;
@@ -404,7 +405,8 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                               q, divu, w_ad, zedge);
 
         Real vad = v_ad(i,j,k);
-        HydroBC::SetYEdgeBCs(i, j, k, n, q, l_yzlo, l_yzhi, bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
+        HydroBC::SetYEdgeBCs(i, j, k, n, q, l_yzlo, l_yzhi, vad, vad,
+                             bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
 
         Real st = (vad >= 0.) ? l_yzlo : l_yzhi;
         Real fu = (amrex::Math::abs(vad) < small_vel) ? 0.0 : 1.0;
@@ -432,7 +434,8 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
             sth += Real(0.5) * l_dt * f(i  ,j,k,n);
         }
 
-        HydroBC::SetXEdgeBCs(i, j, k, n, q, stl, sth, bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
+        Real uad = u_ad(i,j,k);
+        HydroBC::SetXEdgeBCs(i, j, k, n, q, stl, sth, uad, uad, bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
 
         if (!allow_inflow_on_outflow) {
             if ( (i==dlo.x) && (bc.lo(0) == BCType::foextrap || bc.lo(0) == BCType::hoextrap) )
@@ -475,7 +478,8 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                               q, divu, w_ad, zedge);
 
         Real uad = u_ad(i,j,k);
-        HydroBC::SetXEdgeBCs(i, j, k, n, q, l_xzlo, l_xzhi, bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
+        HydroBC::SetXEdgeBCs(i, j, k, n, q, l_xzlo, l_xzhi, uad, uad,
+                             bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
 
 
         Real st = (uad >= 0.) ? l_xzlo : l_xzhi;
@@ -493,7 +497,8 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                               q, divu, u_ad, xedge);
 
         Real wad = w_ad(i,j,k);
-        HydroBC::SetZEdgeBCs(i, j, k, n, q, l_zxlo, l_zxhi, bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
+        HydroBC::SetZEdgeBCs(i, j, k, n, q, l_zxlo, l_zxhi, wad, wad,
+                             bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
 
         Real st = (wad >= 0.) ? l_zxlo : l_zxhi;
         Real fu = (amrex::Math::abs(wad) < small_vel) ? 0.0 : 1.0;
@@ -522,7 +527,8 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
            sth += Real(0.5) * l_dt * f(i,j  ,k,n);
         }
 
-        HydroBC::SetYEdgeBCs(i, j, k, n, q, stl, sth, bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
+        Real vad = v_ad(i,j,k);
+        HydroBC::SetYEdgeBCs(i, j, k, n, q, stl, sth, vad, vad, bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
 
         if (!allow_inflow_on_outflow) {
             if ( (j==dlo.y) && (bc.lo(1) == BCType::foextrap || bc.lo(1) == BCType::hoextrap) )
@@ -566,8 +572,8 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                               q, divu, v_ad, yedge);
 
         Real uad = u_ad(i,j,k);
-        HydroBC::SetXEdgeBCs(i, j, k, n, q, l_xylo, l_xyhi, bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
-
+        HydroBC::SetXEdgeBCs(i, j, k, n, q, l_xylo, l_xyhi, uad, uad,
+                             bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
 
         Real st = (uad >= 0.) ? l_xylo : l_xyhi;
         Real fu = (amrex::Math::abs(uad) < small_vel) ? 0.0 : 1.0;
@@ -588,7 +594,8 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                               q, divu, u_ad, xedge);
 
         Real vad = v_ad(i,j,k);
-        HydroBC::SetYEdgeBCs(i, j, k, n, q, l_yxlo, l_yxhi, bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
+        HydroBC::SetYEdgeBCs(i, j, k, n, q, l_yxlo, l_yxhi, vad, vad,
+                             bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
 
 
         Real st = (vad >= 0.) ? l_yxlo : l_yxhi;
@@ -615,7 +622,9 @@ Godunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
            sth += Real(0.5) * l_dt * f(i,j,k  ,n);
         }
 
-        HydroBC::SetZEdgeBCs(i, j, k, n, q, stl, sth, bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
+        Real wad = w_ad(i,j,k);
+        HydroBC::SetZEdgeBCs(i, j, k, n, q, stl, sth, wad, wad,
+                             bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
 
         if (!allow_inflow_on_outflow) {
             if ( (k==dlo.z) && (bc.lo(2) == BCType::foextrap || bc.lo(2) == BCType::hoextrap) )

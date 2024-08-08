@@ -75,14 +75,15 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
             Real lo = Ipx(i-1,j,k,n);
             Real hi = Imx(i  ,j,k,n);
 
-            Real uad = u_ad(i,j,k);
             const auto bc = HydroBC::getBC(i, j, k, n, domain, pbc, bc_arr);
 
-            EBGodunovBC::SetXBCs(i, j, k, n, q, lo, hi, bc.lo(0), bc.hi(0), dlo.x, dhi.x, true);
+            EBGodunovBC::SetXBCs(i, j, k, n, q, lo, hi, u_ad(i,j,k), u_ad(i,j,k),
+                                 bc.lo(0), bc.hi(0), dlo.x, dhi.x, true);
 
             xlo(i,j,k,n) = lo;
             xhi(i,j,k,n) = hi;
 
+            Real uad = u_ad(i,j,k);
             Real st = (uad >= 0.) ? lo : hi;
             Real fu = (amrex::Math::abs(uad) < small_vel) ? Real(0.0) : Real(1.0);
             Imx(i, j, k, n) = fu*st + (Real(1.0) - fu) * Real(0.5) * (hi + lo); // store xedge
@@ -92,14 +93,15 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
             Real lo = Ipy(i,j-1,k,n);
             Real hi = Imy(i,j  ,k,n);
 
-            Real vad = v_ad(i,j,k);
             const auto bc = HydroBC::getBC(i, j, k, n, domain, pbc, bc_arr);
 
-            EBGodunovBC::SetYBCs(i, j, k, n, q, lo, hi, bc.lo(1), bc.hi(1), dlo.y, dhi.y, true);
+            EBGodunovBC::SetYBCs(i, j, k, n, q, lo, hi, v_ad(i,j,k), v_ad(i,j,k),
+                                 bc.lo(1), bc.hi(1), dlo.y, dhi.y, true);
 
             ylo(i,j,k,n) = lo;
             yhi(i,j,k,n) = hi;
 
+            Real vad = v_ad(i,j,k);
             Real st = (vad >= 0.) ? lo : hi;
             Real fu = (amrex::Math::abs(vad) < small_vel) ? Real(0.0) : Real(1.0);
             Imy(i, j, k, n) = fu*st + (Real(1.0) - fu)*Real(0.5)*(hi + lo); // store yedge
@@ -109,14 +111,15 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
             Real lo = Ipz(i,j,k-1,n);
             Real hi = Imz(i,j,k  ,n);
 
-            Real wad = w_ad(i,j,k);
             const auto bc = HydroBC::getBC(i, j, k, n, domain, pbc, bc_arr);
 
-            EBGodunovBC::SetZBCs(i, j, k, n, q, lo, hi, bc.lo(2), bc.hi(2), dlo.z, dhi.z, true);
+            EBGodunovBC::SetZBCs(i, j, k, n, q, lo, hi, w_ad(i,j,k), w_ad(i,j,k),
+                                 bc.lo(2), bc.hi(2), dlo.z, dhi.z, true);
 
             zlo(i,j,k,n) = lo;
             zhi(i,j,k,n) = hi;
 
+            Real wad = w_ad(i,j,k);
             Real st = (wad >= 0.) ? lo : hi;
             Real fu = (amrex::Math::abs(wad) < small_vel) ? Real(0.0) : Real(1.0);
             Imz(i, j, k, n) = fu*st + (Real(1.0) - fu)*Real(0.5)*(hi + lo); // store zedge
@@ -164,10 +167,11 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                                    zlo(i,j,k,n), zhi(i,j,k,n),
                                    q, divu, apx, apy, apz, vfrac_arr, v_ad, yedge);
 
+        HydroBC::SetZEdgeBCs(i, j, k, n, q, l_zylo, l_zyhi, w_ad(i,j,k), w_ad(i,j,k),
+                             bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
+
+
         Real wad = w_ad(i,j,k);
-        HydroBC::SetZEdgeBCs(i, j, k, n, q, l_zylo, l_zyhi, bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
-
-
         Real st = (wad >= 0.) ? l_zylo : l_zyhi;
         Real fu = (amrex::Math::abs(wad) < small_vel) ? Real(0.0) : Real(1.0);
         zylo(i,j,k) = fu*st + (Real(1.0) - fu) * Real(0.5) * (l_zyhi + l_zylo);
@@ -182,9 +186,10 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                                    ylo(i,j,k,n), yhi(i,j,k,n),
                                    q, divu, apx, apy, apz, vfrac_arr, w_ad, zedge);
 
-        Real vad = v_ad(i,j,k);
-        HydroBC::SetYEdgeBCs(i, j, k, n, q, l_yzlo, l_yzhi, bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
+        HydroBC::SetYEdgeBCs(i, j, k, n, q, l_yzlo, l_yzhi, v_ad(i,j,k), v_ad(i,j,k),
+                             bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
 
+        Real vad = v_ad(i,j,k);
         Real st = (vad >= 0.) ? l_yzlo : l_yzhi;
         Real fu = (amrex::Math::abs(vad) < small_vel) ? Real(0.0) : Real(1.0);
         yzlo(i,j,k) = fu*st + (Real(1.0) - fu) * Real(0.5) * (l_yzhi + l_yzlo);
@@ -266,7 +271,8 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
         }
         }
 
-        HydroBC::SetXEdgeBCs(i, j, k, n, q, stl, sth, bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
+        HydroBC::SetXEdgeBCs(i, j, k, n, q, stl, sth, u_ad(i,j,k), u_ad(i,j,k),
+                             bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
 
         if (!allow_inflow_on_outflow) {
             if ( (i==dlo.x) && (bc.lo(0) == BCType::foextrap || bc.lo(0) == BCType::hoextrap) )
@@ -316,10 +322,10 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                                    xlo(i,j,k,n),  xhi(i,j,k,n),
                                    q, divu, apx, apy, apz, vfrac_arr, w_ad, zedge);
 
+        HydroBC::SetXEdgeBCs(i, j, k, n, q, l_xzlo, l_xzhi, u_ad(i,j,k), u_ad(i,j,k),
+                             bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
+
         Real uad = u_ad(i,j,k);
-        HydroBC::SetXEdgeBCs(i, j, k, n, q, l_xzlo, l_xzhi, bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
-
-
         Real st = (uad >= 0.) ? l_xzlo : l_xzhi;
         Real fu = (amrex::Math::abs(uad) < small_vel) ? 0.0 : Real(1.0);
         xzlo(i,j,k) = fu*st + (Real(1.0) - fu) * Real(0.5) * (l_xzhi + l_xzlo);
@@ -334,10 +340,10 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                                    zlo(i,j,k,n), zhi(i,j,k,n),
                                    q, divu, apx, apy, apz, vfrac_arr, u_ad, xedge);
 
+        HydroBC::SetZEdgeBCs(i, j, k, n, q, l_zxlo, l_zxhi, w_ad(i,j,k), w_ad(i,j,k),
+                            bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
+
         Real wad = w_ad(i,j,k);
-        HydroBC::SetZEdgeBCs(i, j, k, n, q, l_zxlo, l_zxhi, bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
-
-
         Real st = (wad >= 0.) ? l_zxlo : l_zxhi;
         Real fu = (amrex::Math::abs(wad) < small_vel) ? 0.0 : Real(1.0);
         zxlo(i,j,k) = fu*st + (Real(1.0) - fu) * Real(0.5) * (l_zxhi + l_zxlo);
@@ -419,7 +425,8 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
         }
         }
 
-        HydroBC::SetYEdgeBCs( i, j, k, n, q, stl, sth, bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
+        HydroBC::SetYEdgeBCs(i, j, k, n, q, stl, sth, v_ad(i,j,k), v_ad(i,j,k),
+                             bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
 
         if (!allow_inflow_on_outflow) {
             if ( (j==dlo.y) && (bc.lo(1) == BCType::foextrap || bc.lo(1) == BCType::hoextrap) )
@@ -470,7 +477,8 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                                    q, divu, apx, apy, apz, vfrac_arr, v_ad, yedge);
 
         Real uad = u_ad(i,j,k);
-        HydroBC::SetXEdgeBCs(i, j, k, n, q, l_xylo, l_xyhi, bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
+        HydroBC::SetXEdgeBCs(i, j, k, n, q, l_xylo, l_xyhi, u_ad(i,j,k), u_ad(i,j,k),
+                             bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
 
 
         Real st = (uad >= 0.) ? l_xylo : l_xyhi;
@@ -491,10 +499,10 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
                                    ylo(i,j,k,n), yhi(i,j,k,n),
                                    q, divu, apx, apy, apz, vfrac_arr, u_ad, xedge);
 
+        HydroBC::SetYEdgeBCs(i, j, k, n, q, l_yxlo, l_yxhi, v_ad(i,j,k), v_ad(i,j,k),
+                             bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
+
         Real vad = v_ad(i,j,k);
-        HydroBC::SetYEdgeBCs(i, j, k, n, q, l_yxlo, l_yxhi, bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
-
-
         Real st = (vad >= 0.) ? l_yxlo : l_yxhi;
         Real fu = (amrex::Math::abs(vad) < small_vel) ? 0.0 : Real(1.0);
         yxlo(i,j,k) = fu*st + (Real(1.0) - fu) * Real(0.5) * (l_yxhi + l_yxlo);
@@ -575,7 +583,8 @@ EBGodunov::ExtrapVelToFacesOnBox ( Box const& bx, int ncomp,
         }
         }
 
-        HydroBC::SetZEdgeBCs( i, j, k, n, q, stl, sth, bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
+        HydroBC::SetZEdgeBCs(i, j, k, n, q, stl, sth, w_ad(i,j,k), w_ad(i,j,k),
+                             bc.lo(2), dlo.z, bc.hi(2), dhi.z, true);
 
         if (!allow_inflow_on_outflow) {
             if ( (k==dlo.z) && (bc.lo(2) == BCType::foextrap || bc.lo(2) == BCType::hoextrap) )
