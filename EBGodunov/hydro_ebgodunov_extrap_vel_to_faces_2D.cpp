@@ -59,29 +59,23 @@ EBGodunov::ExtrapVelToFacesOnBox (Box const& /*bx*/, int ncomp,
     amrex::ParallelFor(
         xebx, ncomp, [=] AMREX_GPU_DEVICE (int i, int j, int k, int n) noexcept
         {
-            Real lo = Ipx(i-1,j,k,n);
-            Real hi = Imx(i  ,j,k,n);
+            xlo(i,j,k,n) = Ipx(i-1,j,k,n);
+            xhi(i,j,k,n) = Imx(i  ,j,k,n);
 
             const auto bc = HydroBC::getBC(i, j, k, n, domain, pbc, bc_arr);
 
-            HydroBC::SetXEdgeBCs(i, j, k, n, q, lo, hi, u_ad(i,j,k), u_ad(i,j,k),
-                                 bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
-
-            xlo(i,j,k,n) = lo;
-            xhi(i,j,k,n) = hi;
+            HydroBC::SetExtrapVelBCsLo(0, i, j, k, n, q, xlo(i,j,k,n), xhi(i,j,k,n), bc.lo(0), dlo.x);
+            HydroBC::SetExtrapVelBCsHi(0, i, j, k, n, q, xlo(i,j,k,n), xhi(i,j,k,n), bc.hi(0), dhi.x);
         },
         yebx, ncomp, [=] AMREX_GPU_DEVICE (int i, int j, int k, int n) noexcept
         {
-            Real lo = Ipy(i,j-1,k,n);
-            Real hi = Imy(i,j  ,k,n);
+            ylo(i,j,k,n) = Ipy(i,j-1,k,n);
+            yhi(i,j,k,n) = Imy(i,j  ,k,n);
 
             const auto bc = HydroBC::getBC(i, j, k, n, domain, pbc, bc_arr);
 
-            HydroBC::SetYEdgeBCs(i, j, k, n, q, lo, hi, v_ad(i,j,k), v_ad(i,j,k),
-                                 bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
-
-            ylo(i,j,k,n) = lo;
-            yhi(i,j,k,n) = hi;
+            HydroBC::SetExtrapVelBCsLo(1 ,i, j, k, n, q, ylo(i,j,k,n), yhi(i,j,k,n), bc.lo(1), dlo.y);
+            HydroBC::SetExtrapVelBCsHi(1 ,i, j, k, n, q, ylo(i,j,k,n), yhi(i,j,k,n), bc.hi(1), dhi.y);
         });
 
 
@@ -105,8 +99,9 @@ EBGodunov::ExtrapVelToFacesOnBox (Box const& /*bx*/, int ncomp,
 
             l_yzlo = ylo(i,j,k,n);
             l_yzhi = yhi(i,j,k,n);
-            HydroBC::SetYEdgeBCs(i, j, k, n, q, l_yzlo, l_yzhi, v_ad(i,j,k), v_ad(i,j,k),
-                                 bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
+
+            HydroBC::SetExtrapVelBCsLo(1, i, j, k, n, q, l_yzlo, l_yzhi, bc.lo(1), dlo.y);
+            HydroBC::SetExtrapVelBCsHi(1, i, j, k, n, q, l_yzlo, l_yzhi, bc.hi(1), dhi.y);
 
             Real vad = v_ad(i,j,k);
             Real st = (vad >= 0.) ? l_yzlo : l_yzhi;
@@ -192,8 +187,8 @@ EBGodunov::ExtrapVelToFacesOnBox (Box const& /*bx*/, int ncomp,
             }
         }
 
-        HydroBC::SetXEdgeBCs(i, j, k, n, q, stl, sth, u_ad(i,j,k), u_ad(i,j,k),
-                             bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
+        HydroBC::SetExtrapVelBCsLo(0, i, j, k, n, q, stl, sth, bc.lo(0), dlo.x);
+        HydroBC::SetExtrapVelBCsHi(0, i, j, k, n, q, stl, sth, bc.hi(0), dhi.x);
 
         if (!allow_inflow_on_outflow) {
             if ( (i==dlo.x) && (bc.lo(0) == BCType::foextrap || bc.lo(0) == BCType::hoextrap) )
@@ -234,8 +229,8 @@ EBGodunov::ExtrapVelToFacesOnBox (Box const& /*bx*/, int ncomp,
             l_xzlo = xlo(i,j,k,n);
             l_xzhi = xhi(i,j,k,n);
 
-            HydroBC::SetXEdgeBCs(i, j, k, n, q, l_xzlo, l_xzhi, u_ad(i,j,k), u_ad(i,j,k),
-                                 bc.lo(0), dlo.x, bc.hi(0), dhi.x, true);
+            HydroBC::SetExtrapVelBCsLo(0, i, j, k, n, q, l_xzlo, l_xzhi,  bc.lo(0), dlo.x);
+            HydroBC::SetExtrapVelBCsHi(0, i, j, k, n, q, l_xzlo, l_xzhi,  bc.hi(0), dhi.x);
 
             Real uad = u_ad(i,j,k);
             Real st = (uad >= 0.) ? l_xzlo : l_xzhi;
@@ -317,8 +312,8 @@ EBGodunov::ExtrapVelToFacesOnBox (Box const& /*bx*/, int ncomp,
             }
         }
 
-        HydroBC::SetYEdgeBCs(i, j, k, n, q, stl, sth, v_ad(i,j,k), v_ad(i,j,k),
-                             bc.lo(1), dlo.y, bc.hi(1), dhi.y, true);
+        HydroBC::SetExtrapVelBCsLo(1, i, j, k, n, q, stl, sth, bc.lo(1), dlo.y);
+        HydroBC::SetExtrapVelBCsHi(1, i, j, k, n, q, stl, sth, bc.hi(1), dhi.y);
 
         if (!allow_inflow_on_outflow) {
             if ( (j==dlo.y) && (bc.lo(1) == BCType::foextrap || bc.lo(1) == BCType::hoextrap) )
