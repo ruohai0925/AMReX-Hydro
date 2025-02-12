@@ -6,8 +6,6 @@
 
 using namespace amrex;
 
-constexpr amrex::Real eps = 1.0e-6;
-
 namespace HydroUtils {
 
 namespace {
@@ -320,12 +318,15 @@ void enforceInOutSolvability (
         const Real* a_dx = geom[lev].CellSize();
         Real influx = 0.0, outflux = 0.0;
         compute_influx_outflux(lev, vels_vec, inout_masks, a_dx, influx, outflux, include_bndry_corners);
-        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
-            outflux > eps,
-            "Cannot enforce solvability, no outflow from the direction dependent boundaries");
 
-        const Real alpha_fcf = influx/outflux;  // flux correction factor
-        correct_outflow(lev, vels_vec, inout_masks, bc_type, domain, alpha_fcf, include_bndry_corners);
+        if ((influx > small_vel) && (outflux < small_vel)) {
+            Abort("Cannot enforce solvability, no outflow from the direction dependent boundaries");
+        } else if ((influx < small_vel) && (outflux < small_vel)) {
+            return; // do nothing
+        } else {
+            const Real alpha_fcf = influx/outflux;  // flux correction factor
+            correct_outflow(lev, vels_vec, inout_masks, bc_type, domain, alpha_fcf, include_bndry_corners);
+        }
 
     }   // levels loop
 }

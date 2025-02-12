@@ -66,7 +66,7 @@ void SetXBCs (const int i, const int j, const int k, const int n,
             //
             // Note that this is only relevant for 3D, as only 3D ever needs to
             // set the BC beyond the domain face.
-            // This is potentially tricky because the code re-uses some of the
+            // This is potentially tricky because the code reuses some of the
             // space holding the holding the states passed in here; it puts the
             // upwinded intermediate edge state in Imx (which supplies hi)
             // With GPU, I think it's undertermined which Imx(i+..) you'll get here,
