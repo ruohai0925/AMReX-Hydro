@@ -11,3 +11,7 @@ ifeq ($(AMREX_SPACEDIM),3)
      CEXE_headers += hydro_ebgodunov_corner_couple.H
 endif
 CEXE_headers += hydro_ebgodunov_transverse_$(DIM)D_K.H
+
+ifeq ($(NO_EB), TRUE)
+  DEFINES += -DHYDRO_NO_EB
+endif
