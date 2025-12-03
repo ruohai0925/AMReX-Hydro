@@ -80,6 +80,8 @@ public:
     amrex::Vector< const amrex::MultiFab* > getGradPhiConst () const {return GetVecOfConstPtrs(m_fluxes);}
     amrex::Vector<       amrex::MultiFab* > getPhi          ()       {return GetVecOfPtrs(m_phi);}
     amrex::Vector< const amrex::MultiFab* > getPhiConst     () const {return GetVecOfConstPtrs(m_phi);}
+    amrex::Vector<       amrex::MultiFab* > getRHS          ()       {return GetVecOfPtrs(m_rhs);}
+    amrex::Vector< const amrex::MultiFab* > getRHSConst     () const {return GetVecOfConstPtrs(m_rhs);}
 
     amrex::Vector<       amrex::MultiFab* > calcGradPhi     (const amrex::Vector<amrex::MultiFab*>& a_phi);
 
