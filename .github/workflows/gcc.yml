@@ -18,11 +18,11 @@ jobs:
     env: {CXXFLAGS: "-fno-operator-names -Werror -Wall -Wextra -Wpedantic -Wnull-dereference -Wfloat-conversion -Wshadow -Woverloaded-virtual -Wnon-virtual-dtor -Wlogical-op -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wmissing-include-dirs"}
     steps:
     - name: Checkout AMReX-Hydro
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         path: AMReX-Hydro
     - name: Checkout AMReX
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         repository: AMReX-Codes/amrex
         path: amrex
@@ -36,7 +36,7 @@ jobs:
     - name: Load Dependencies
       run: |
         AMReX-Hydro/.github/workflows/dependencies/dependencies.sh
-        amrex/.github/workflows/dependencies/dependencies_clang-tidy.sh 14
+        amrex/.github/workflows/dependencies/dependencies_clang-tidy-apt-llvm.sh 21
         amrex/.github/workflows/dependencies/dependencies_ccache.sh
     - name: Build & Install
       run: |
@@ -76,7 +76,7 @@ jobs:
 
         ${{github.workspace}}/amrex/Tools/C_scripts/mmclt.py --input ${{github.workspace}}/ccache.log.txt --identifier Godunov
         make -j2 -f clang-tidy-ccache-misses.mak \
-            CLANG_TIDY=clang-tidy-14 \
+            CLANG_TIDY=clang-tidy-21 \
             CLANG_TIDY_ARGS="--config-file=${{github.workspace}}/AMReX-Hydro/.clang-tidy --warnings-as-errors=*"
 
         ccache -s
@@ -88,11 +88,11 @@ jobs:
     env: {CXXFLAGS: "-fno-operator-names -Werror -Wall -Wextra -Wpedantic -Wnull-dereference -Wfloat-conversion -Wshadow -Woverloaded-virtual -Wnon-virtual-dtor -Wlogical-op -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wmissing-include-dirs"}
     steps:
     - name: Checkout AMReX-Hydro
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         path: AMReX-Hydro
     - name: Checkout AMReX
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         repository: AMReX-Codes/amrex
         path: amrex
@@ -106,7 +106,7 @@ jobs:
     - name: Load Dependencies
       run: |
         AMReX-Hydro/.github/workflows/dependencies/dependencies.sh
-        amrex/.github/workflows/dependencies/dependencies_clang-tidy.sh 14
+        amrex/.github/workflows/dependencies/dependencies_clang-tidy-apt-llvm.sh 21
         amrex/.github/workflows/dependencies/dependencies_ccache.sh
     - name: Build & Install
       run: |
@@ -148,7 +148,7 @@ jobs:
 
         ${{github.workspace}}/amrex/Tools/C_scripts/mmclt.py --input ${{github.workspace}}/ccache.log.txt --identifier Godunov
         make -j2 -f clang-tidy-ccache-misses.mak \
-            CLANG_TIDY=clang-tidy-14 \
+            CLANG_TIDY=clang-tidy-21 \
             CLANG_TIDY_ARGS="--config-file=${{github.workspace}}/AMReX-Hydro/.clang-tidy --warnings-as-errors=*"
 
         ccache -s
